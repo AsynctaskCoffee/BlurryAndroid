@@ -1,0 +1,3 @@
+include ':blurmaker'
+include ':app'
+rootProject.name = "Blurry Android"

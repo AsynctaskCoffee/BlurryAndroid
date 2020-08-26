@@ -11,11 +11,14 @@ import android.renderscript.RenderScript
 import android.renderscript.ScriptIntrinsicBlur
 import android.view.View
 import android.widget.ImageView
+import com.asynctaskcoffee.blurmaker.Blurr.Tools.Companion.bitmapFromCustomView
+import com.asynctaskcoffee.blurmaker.Blurr.Tools.Companion.bitmapFromDrawable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import java.lang.RuntimeException
 import kotlin.math.roundToInt
 
-class Blurr(var activity: Activity) {
+class Blurr(private var activity: Activity? = null) {
 
     private var bS = 0.3f
     private var bR = 15f
@@ -38,14 +41,14 @@ class Blurr(var activity: Activity) {
         return this
     }
 
-    fun solution(v: View) = cbv(v)?.let { gb(it) }
+    fun solution(v: View) = bitmapFromCustomView(v)?.let { gb(it) }
 
     fun solution(b: Bitmap) = gb(b)
 
-    fun solution(d: Drawable) = dtb(d)?.let { gb(it) }
+    fun solution(d: Drawable) = bitmapFromDrawable(d)?.let { gb(it) }
 
     fun into(v: View, i: ImageView) {
-        cbv(v)?.let { rx(it, i) }
+        bitmapFromCustomView(v)?.let { rx(it, i) }
     }
 
     fun into(b: Bitmap, i: ImageView) {
@@ -53,7 +56,7 @@ class Blurr(var activity: Activity) {
     }
 
     fun into(d: Drawable, i: ImageView) {
-        dtb(d)?.let { rx(it, i) }
+        bitmapFromDrawable(d)?.let { rx(it, i) }
     }
 
 
@@ -61,6 +64,7 @@ class Blurr(var activity: Activity) {
      * Creates blurred bitmap from target bitmap
      * */
     private fun gb(image: Bitmap): Bitmap {
+        if (activity == null) throw RuntimeException("you have to implement activity")
         val width = (image.width * bS).roundToInt()
         val height = (image.height * bS).roundToInt()
         val inputBitmap = Bitmap.createScaledBitmap(image, width, height, false)
@@ -77,62 +81,70 @@ class Blurr(var activity: Activity) {
     }
 
     private fun rx(image: Bitmap, imageView: ImageView) {
+        if (activity == null) throw RuntimeException("you have to implement activity")
         Flowable.fromCallable {
             return@fromCallable gb(image)
         }
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.single())
             .subscribe {
-                activity.runOnUiThread {
+                activity?.runOnUiThread {
                     imageView.setImageBitmap(it)
                 }
             }
     }
 
-    /**
-     * Creates bitmap from View
-     * */
-    private fun cbv(view: View): Bitmap? {
-        val spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        view.measure(spec, spec)
-        view.layout(0, 0, view.measuredWidth, view.measuredHeight)
-        val b = Bitmap.createBitmap(
-            view.measuredWidth, view.measuredWidth,
-            Bitmap.Config.ARGB_8888
-        )
-        val c = Canvas(b)
-        c.translate((-view.scrollX).toFloat(), (-view.scrollY).toFloat())
-        view.draw(c)
-        return b
-    }
 
-    /**
-     * Creates bitmap from drawable
-     * */
-    private fun dtb(drawable: Drawable): Bitmap? {
-        if (drawable is BitmapDrawable) {
-            if (drawable.bitmap != null) {
-                return drawable.bitmap
+    class Tools {
+        companion object {
+            /**
+             * Creates bitmap from drawable
+             * */
+            fun bitmapFromDrawable(drawable: Drawable): Bitmap? {
+                if (drawable is BitmapDrawable) {
+                    if (drawable.bitmap != null) {
+                        return drawable.bitmap
+                    }
+                }
+                val bitmap: Bitmap? =
+                    if (drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0) {
+                        Bitmap.createBitmap(
+                            1,
+                            1,
+                            Bitmap.Config.ARGB_8888
+                        )
+                    } else {
+                        Bitmap.createBitmap(
+                            drawable.intrinsicWidth,
+                            drawable.intrinsicHeight,
+                            Bitmap.Config.ARGB_8888
+                        )
+                    }
+                val canvas = bitmap?.let { Canvas(it) }
+                if (canvas != null) {
+                    drawable.setBounds(0, 0, canvas.width, canvas.height)
+                    drawable.draw(canvas)
+                }
+                return bitmap
+            }
+
+
+            /**
+             * Creates bitmap from View
+             * */
+            fun bitmapFromCustomView(view: View): Bitmap? {
+                val spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                view.measure(spec, spec)
+                view.layout(0, 0, view.measuredWidth, view.measuredHeight)
+                val b = Bitmap.createBitmap(
+                    view.measuredWidth, view.measuredWidth,
+                    Bitmap.Config.ARGB_8888
+                )
+                val c = Canvas(b)
+                c.translate((-view.scrollX).toFloat(), (-view.scrollY).toFloat())
+                view.draw(c)
+                return b
             }
         }
-        val bitmap: Bitmap? = if (drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0) {
-            Bitmap.createBitmap(
-                1,
-                1,
-                Bitmap.Config.ARGB_8888
-            )
-        } else {
-            Bitmap.createBitmap(
-                drawable.intrinsicWidth,
-                drawable.intrinsicHeight,
-                Bitmap.Config.ARGB_8888
-            )
-        }
-        val canvas = bitmap?.let { Canvas(it) }
-        if (canvas != null) {
-            drawable.setBounds(0, 0, canvas.width, canvas.height)
-            drawable.draw(canvas)
-        }
-        return bitmap
     }
 }

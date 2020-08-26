@@ -22,21 +22,49 @@ class MainActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
     }
 
     private fun exampleOfUsages() {
-        Blurr.get(this)
-            .applyRules(bS, bR)
-            .into(resources.getDrawable(R.drawable.test_image), imageViewTrial)
+
+        /**
+         * Blurred Images
+         * */
 
         Blurr.get(this)
             .applyRules(bS, bR)
-            .into(view, imageViewTrial)
+            .into(resources.getDrawable(R.drawable.test_image), imageViewTrial) //async
 
         Blurr.get(this)
             .applyRules(bS, bR)
-            .into(bitmap!!, imageViewTrial)
+            .into(view, imageViewTrial) //async
 
-        val bitmap1 = Blurr.get(this).applyRules(bS, bR).solution(view)
-        val bitmap2 = Blurr.get(this).applyRules(bS, bR).solution(resources.getDrawable(R.drawable.test_image))
-        val bitmap3 = Blurr.get(this).applyRules(bS, bR).solution(bitmap!!)
+        Blurr.get(this)
+            .applyRules(bS, bR)
+            .into(bitmap!!, imageViewTrial) //async
+
+        val bitmap1 = Blurr
+            .get(this)
+            .applyRules(bS, bR)
+            .solution(view)
+
+        val bitmap2 = Blurr
+            .get(this)
+            .applyRules(bS, bR)
+            .solution(resources.getDrawable(R.drawable.test_image))
+
+        val bitmap3 = Blurr
+            .get(this)
+            .applyRules(bS, bR)
+            .solution(bitmap!!)
+
+        /**
+         * Inline tools
+         * */
+
+        val bitmap4 = Blurr
+            .getTools()
+            .bitmapFromCustomView(view)
+
+        val bitmap5 = Blurr
+            .getTools()
+            .bitmapFromDrawable(resources.getDrawable(R.drawable.test_image))
     }
 
     private fun setListeners() {

@@ -25,6 +25,7 @@ class Blurr(private var activity: Activity? = null) {
 
     companion object {
         fun get(activity: Activity): Blurr = Blurr(activity)
+        fun getTools(): Tools = Tools()
     }
 
     /**
@@ -96,55 +97,53 @@ class Blurr(private var activity: Activity? = null) {
 
 
     class Tools {
-        companion object {
-            /**
-             * Creates bitmap from drawable
-             * */
-            fun bitmapFromDrawable(drawable: Drawable): Bitmap? {
-                if (drawable is BitmapDrawable) {
-                    if (drawable.bitmap != null) {
-                        return drawable.bitmap
-                    }
+        /**
+         * Creates bitmap from drawable
+         * */
+        fun bitmapFromDrawable(drawable: Drawable): Bitmap? {
+            if (drawable is BitmapDrawable) {
+                if (drawable.bitmap != null) {
+                    return drawable.bitmap
                 }
-                val bitmap: Bitmap? =
-                    if (drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0) {
-                        Bitmap.createBitmap(
-                            1,
-                            1,
-                            Bitmap.Config.ARGB_8888
-                        )
-                    } else {
-                        Bitmap.createBitmap(
-                            drawable.intrinsicWidth,
-                            drawable.intrinsicHeight,
-                            Bitmap.Config.ARGB_8888
-                        )
-                    }
-                val canvas = bitmap?.let { Canvas(it) }
-                if (canvas != null) {
-                    drawable.setBounds(0, 0, canvas.width, canvas.height)
-                    drawable.draw(canvas)
-                }
-                return bitmap
             }
+            val bitmap: Bitmap? =
+                if (drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0) {
+                    Bitmap.createBitmap(
+                        1,
+                        1,
+                        Bitmap.Config.ARGB_8888
+                    )
+                } else {
+                    Bitmap.createBitmap(
+                        drawable.intrinsicWidth,
+                        drawable.intrinsicHeight,
+                        Bitmap.Config.ARGB_8888
+                    )
+                }
+            val canvas = bitmap?.let { Canvas(it) }
+            if (canvas != null) {
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+            }
+            return bitmap
+        }
 
 
-            /**
-             * Creates bitmap from View
-             * */
-            fun bitmapFromCustomView(view: View): Bitmap? {
-                val spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-                view.measure(spec, spec)
-                view.layout(0, 0, view.measuredWidth, view.measuredHeight)
-                val b = Bitmap.createBitmap(
-                    view.measuredWidth, view.measuredWidth,
-                    Bitmap.Config.ARGB_8888
-                )
-                val c = Canvas(b)
-                c.translate((-view.scrollX).toFloat(), (-view.scrollY).toFloat())
-                view.draw(c)
-                return b
-            }
+        /**
+         * Creates bitmap from View
+         * */
+        fun bitmapFromCustomView(view: View): Bitmap? {
+            val spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            view.measure(spec, spec)
+            view.layout(0, 0, view.measuredWidth, view.measuredHeight)
+            val b = Bitmap.createBitmap(
+                view.measuredWidth, view.measuredWidth,
+                Bitmap.Config.ARGB_8888
+            )
+            val c = Canvas(b)
+            c.translate((-view.scrollX).toFloat(), (-view.scrollY).toFloat())
+            view.draw(c)
+            return b
         }
     }
 }

@@ -3,7 +3,7 @@
 
 [![Kotlin Version](https://img.shields.io/badge/language-kotlin%20100%25-orange.svg)](https://kotlinlang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)  
-![version](https://img.shields.io/badge/version-beta-0.1-blue)
+![version](https://img.shields.io/badge/version-0.1-blue)
 
 Async or Sync, you can quickly blur your images. The library supports Bitmap, Drawable and CustomViews. You have the opportunity to use the necessary libraries separately. If you encounter an error or problem, please open a issue. It will be fixed as soon as possible. :zap:
 

@@ -11,8 +11,6 @@ import android.renderscript.RenderScript
 import android.renderscript.ScriptIntrinsicBlur
 import android.view.View
 import android.widget.ImageView
-import com.asynctaskcoffee.blurmaker.Blurr.Tools.Companion.bitmapFromCustomView
-import com.asynctaskcoffee.blurmaker.Blurr.Tools.Companion.bitmapFromDrawable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.lang.RuntimeException
@@ -22,6 +20,11 @@ class Blurr(private var activity: Activity? = null) {
 
     private var bS = 0.3f
     private var bR = 15f
+    private lateinit var tools : Tools
+
+    init {
+        tools = Tools()
+    }
 
     companion object {
         fun get(activity: Activity): Blurr = Blurr(activity)
@@ -42,14 +45,14 @@ class Blurr(private var activity: Activity? = null) {
         return this
     }
 
-    fun solution(v: View) = bitmapFromCustomView(v)?.let { gb(it) }
+    fun solution(v: View) = tools.bitmapFromCustomView(v)?.let { gb(it) }
 
     fun solution(b: Bitmap) = gb(b)
 
-    fun solution(d: Drawable) = bitmapFromDrawable(d)?.let { gb(it) }
+    fun solution(d: Drawable) = tools.bitmapFromDrawable(d)?.let { gb(it) }
 
     fun into(v: View, i: ImageView) {
-        bitmapFromCustomView(v)?.let { rx(it, i) }
+        tools.bitmapFromCustomView(v)?.let { rx(it, i) }
     }
 
     fun into(b: Bitmap, i: ImageView) {
@@ -57,7 +60,7 @@ class Blurr(private var activity: Activity? = null) {
     }
 
     fun into(d: Drawable, i: ImageView) {
-        bitmapFromDrawable(d)?.let { rx(it, i) }
+        tools.bitmapFromDrawable(d)?.let { rx(it, i) }
     }
 
 
